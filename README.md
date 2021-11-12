@@ -229,16 +229,16 @@ zstyle ":plugin:zflai:dj" store_interval 30
 
 ## Installation
 
-Simply source or load as a Zsh plugin, e.g.: with Zplugin:
+Simply source or load as a Zsh plugin, e.g.: with Zinit:
 
 ```zsh
-zplugin load zdharma/zflai
+zinit load zdharma-continuum/zflai
 ```
 
 or with zgen:
 
 ```zsh
-zgen load zdharma/zflai
+zgen load zdharma-continuum/zflai
 ```
 
 etc.

@@ -2,70 +2,57 @@
 
 ## Introduction
 
-Adding logging to a script can constitute a problem – it makes the script run
-slower. If the script is to perform some large work then increasing the
-execution time by e.g.: 10-20% can lead to a significant difference.
+Adding logging to a script can constitute a problem – it makes the script run slower. If the script is to perform some
+large work then increasing the execution time by e.g.: 10-20% can lead to a significant difference.
 
-Because of this, such large-work scripts are often limited to file-only logging,
-because sending the messages to e.g.: `mysql` database would increase the
-execution time even more.
+Because of this, such large-work scripts are often limited to file-only logging, because sending the messages to e.g.:
+`mysql` database would increase the execution time even more.
 
 ### How Zflai Solves The Performance Issue
 
 Zflai operates in the following way:
 
-1. A background logging process is being started by a `>( … function …)`
-   substitution.  
-2. A file descriptor is remembered in the script process.
-3. Writing to such descriptor is very fast.
-4. An utility function `zflai-log` is provided, which sends the message to the
-   background process through the descriptor.
-5. The background process reads the data and remembers it in memory.
-6. After each interval (configurable) it moves the data from the memory to one
-   of supported backends:
+1. A background logging process is being started by a `>( … function …)` substitution.
+1. A file descriptor is remembered in the script process.
+1. Writing to such descriptor is very fast.
+1. An utility function `zflai-log` is provided, which sends the message to the background process through the
+   descriptor.
+1. The background process reads the data and remembers it in memory.
+1. After each interval (configurable) it moves the data from the memory to one of supported backends:
    - file – a regular log file,
    - SQLite3,
    - MySQL,
    - ElasticSearch.
-7. More, the background process shuts down itself after a configurable idle time
-   (45 seconds by default). It is being automatically re-spawned by the
-   `zflai-log` call whenever needed.
-8. This means that `zflai` can be used e.g.: on all shells, as the number of
-   processes will not be doubled – the background process will run only when
-   needed, while the zero-lag logging will be continuously ready to use.
+1. More, the background process shuts down itself after a configurable idle time (45 seconds by default). It is being
+   automatically re-spawned by the `zflai-log` call whenever needed.
+1. This means that `zflai` can be used e.g.: on all shells, as the number of processes will not be doubled – the
+   background process will run only when needed, while the zero-lag logging will be continuously ready to use.
 
-This way the script is slowed down by a minimum degree while a feature-rich
-logging to databases like MySQL and ElasticSearch is being available.
+This way the script is slowed down by a minimum degree while a feature-rich logging to databases like MySQL and
+ElasticSearch is being available.
 
 ## How To Use
 
 There are only two end-user calls currently:
 
-1. `zflai-ctable "{TABLE-NAME} :: {FIELD1}:{TYPE} / {FIELD2}:{TYPE}
-   / … / {FIELDN}:{TYPE}"`
+1. `zflai-ctable "{TABLE-NAME} :: {FIELD1}:{TYPE} / {FIELD2}:{TYPE} / … / {FIELDN}:{TYPE}"`
 
    The types are borrowed from SQL - they're `varchar(…)`, `integer`, etc.
 
-   The function **defines a table**, which then, upon first use on given backend
-   (e.g.: SQLite3 or ElasticSearch) will be created before storing the first
-   data.
+   The function **defines a table**, which then, upon first use on given backend (e.g.: SQLite3 or ElasticSearch) will
+   be created before storing the first data.
 
-   The tables are not bound to any particular backend. They can be used with
-   multiple backends or just one of them, etc.
+   The tables are not bound to any particular backend. They can be used with multiple backends or just one of them, etc.
 
-2. `zflai-log "@{DB-NAME} / {TABLE} :: {FIELD1 TEXT…} | {FIELD2 TEXT…}
-   | … | {FIELDN TEXT…}`
+1. `zflai-log "@{DB-NAME} / {TABLE} :: {FIELD1 TEXT…} | {FIELD2 TEXT…} | … | {FIELDN TEXT…}`
 
-   Schedules the multi-column message for storage in database `DB-NAME`, in its
-   table `TABLE`.
+   Schedules the multi-column message for storage in database `DB-NAME`, in its table `TABLE`.
 
 ## The Backend (Database) Definitions
 
-Zflai uses directory `~/.config/zflai` to keep the configuration files (or other
-if the `$XDG_CONFIG_HOME` isn't `~/.config`). There, the `ini` files that define
-the databases `@{DB-NAME}` from the `zflai-log` call are searched, under the
-names `DB-NAME.def`. Below are example `ini` files for each of the supported
-database backend.
+Zflai uses directory `~/.config/zflai` to keep the configuration files (or other if the `$XDG_CONFIG_HOME` isn't
+`~/.config`). There, the `ini` files that define the databases `@{DB-NAME}` from the `zflai-log` call are searched,
+under the names `DB-NAME.def`. Below are example `ini` files for each of the supported database backend.
 
 ### File Backend
 
